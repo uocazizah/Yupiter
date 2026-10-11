@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, typecheck & test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [24, 26]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (Biome)
+        run: npm run lint
+
+      - name: Build (CJS + ESM)
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build test suite
+        run: npm run build:test
+
+      - name: Test
+        run: node scripts/run-tests.cjs
+
+      - name: Test resolusi package.json
+        run: node scripts/check-exports.cjs
+
+      - name: Upload build artifact
+        if: matrix.node == 24
+        uses: actions/upload-artifact@v7
+        with:
+          name: build
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            dist
+            test-build
+            test-build-esm
+            scripts
+            package.json
+
+  # Menjalankan build yang sama di banyak versi Node, dari 9 (terendah yang
+  # didukung) sampai rilis terbaru. Node lama dipasang langsung dari
+  # nodejs.org/dist karena actions/setup-node tidak lagi menyediakan manifest
+  # untuk versi sekokoh 9.x.
+  compat:
+    name: Node ${{ matrix.node }}
+    needs: quality
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["9", "10", "12", "14", "16", "18", "20", "22", "24", "26"]
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: build
+          path: .
+
+      - name: Install Node.js ${{ matrix.node }}
+        run: |
+          set -eu
+          MAJOR="${{ matrix.node }}"
+          VERSION="$(curl -fsSL https://nodejs.org/dist/index.json \
+            | jq -r --arg prefix "v${MAJOR}." '[.[] | select(.version | startswith($prefix))][0].version')"
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "Tidak menemukan Node.js untuk major ${MAJOR}" >&2
+            exit 1
+          fi
+          echo "Memasang Node.js ${VERSION}"
+          curl -fsSL "https://nodejs.org/dist/${VERSION}/node-${VERSION}-linux-x64.tar.xz" -o /tmp/node.tar.xz
+          sudo mkdir -p /opt/compat-node
+          sudo tar -xJf /tmp/node.tar.xz -C /opt/compat-node --strip-components=1
+          echo "/opt/compat-node/bin" >> "$GITHUB_PATH"
+          export PATH="/opt/compat-node/bin:$PATH"
+          node --version
+
+      - name: Test suite
+        run: |
+          node --version
+          node scripts/run-tests.cjs
+
+      - name: Test resolusi package.json
+        run: node scripts/check-exports.cjs

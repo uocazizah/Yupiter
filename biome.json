@@ -1,0 +1,112 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!**/dist", "!**/test-build", "!**/test-build-esm", "!**/node_modules"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "all"
+    }
+  },
+  "json": {
+    "formatter": {
+      "indentStyle": "space"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        "useNodejsImportProtocol": "off",
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "globalThis": "Node.js 9-11 tidak memiliki globalThis — gunakan global.",
+              "structuredClone": "Diperkenalkan di Node.js 17.",
+              "queueMicrotask": "Diperkenalkan di Node.js 11.",
+              "fetch": "Diperkenalkan di Node.js 18."
+            }
+          }
+        }
+      },
+      "nursery": {
+        "noJsRestrictedProperties": {
+          "level": "error",
+          "options": {
+            "entries": [
+              {
+                "object": "Object",
+                "property": "fromEntries"
+              },
+              {
+                "object": "Object",
+                "property": "hasOwn"
+              },
+              {
+                "object": "Promise",
+                "property": "allSettled"
+              },
+              {
+                "object": "Promise",
+                "property": "any"
+              },
+              {
+                "property": "at"
+              },
+              {
+                "property": "flat"
+              },
+              {
+                "property": "flatMap"
+              },
+              {
+                "property": "replaceAll"
+              },
+              {
+                "property": "matchAll"
+              },
+              {
+                "property": "findLast"
+              },
+              {
+                "property": "findLastIndex"
+              },
+              {
+                "property": "toSorted"
+              },
+              {
+                "property": "toReversed"
+              },
+              {
+                "property": "toSpliced"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

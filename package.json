@@ -1,0 +1,69 @@
+{
+  "name": "yupiter",
+  "version": "0.1.0",
+  "description": "Standard-library-style utilities for Node.js — printf-style I/O with zero runtime dependencies. ESM + CJS, Node.js 9+.",
+  "keywords": [
+    "printf",
+    "sprintf",
+    "format",
+    "stdio",
+    "io",
+    "standard-library",
+    "util",
+    "esm",
+    "cjs"
+  ],
+  "license": "MIT",
+  "author": "Uoc Azizah",
+  "homepage": "https://github.com/uocazizah/Yupiter#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uocazizah/Yupiter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/uocazizah/Yupiter/issues"
+  },
+  "type": "commonjs",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=9"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node scripts/clean.cjs",
+    "build": "npm run clean && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && node scripts/postbuild.cjs --dist",
+    "build:test": "tsc -p tsconfig.test-cjs.json && tsc -p tsconfig.test-esm.json && node scripts/postbuild.cjs --tests",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "npm run build && npm run build:test && node scripts/run-tests.cjs && node scripts/check-exports.cjs",
+    "prepublishOnly": "npm run lint && npm test && npm run typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/node": "^26.0.0",
+    "typescript": "^7.0.2"
+  }
+}
