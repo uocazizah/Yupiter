@@ -67,7 +67,10 @@ function runEsmSuite() {
     return;
   }
   const driver = path.join(__dirname, "esm-driver.mjs");
-  const result = childProcess.spawnSync(process.execPath, [driver], { cwd: root, stdio: "inherit" });
+  const result = childProcess.spawnSync(process.execPath, [driver], {
+    cwd: root,
+    stdio: "inherit",
+  });
   if (result.status !== 0) {
     process.exit(result.status === null ? 1 : result.status);
   }
